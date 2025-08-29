@@ -10,10 +10,10 @@ const JWT_SECRET = "my_secret_key"; // Use a strong secret key in production
 
 // Cookie options for persistent token
 const cookieOptions = {
-  httpOnly: true, // Prevents JavaScript access to the cookie
-  secure: process.env.NODE_ENV === "production", // Use secure cookies in production
-  maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days in milliseconds
-  sameSite: "strict", // Protects against CSRF
+  httpOnly: true,
+  secure: true, // Always true for cross-site cookies
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+  sameSite: "none", // Required for cross-site cookies
 };
 
 // Middleware to authenticate users using JWT
@@ -76,7 +76,8 @@ router.post("/signup", async (req, res) => {
       JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.cookie("token", token);
+    res.cookie("token", token, cookieOptions);
+    console.log("Cookie 'token' set with options:", cookieOptions);
     const result = await getUserProfile(newUser._id);
 
     if (result.success) {
@@ -126,10 +127,8 @@ router.post("/login", async (req, res) => {
       }
     );
 
-    res.cookie("token", token);
-    // res.cookie("token", "value");
-
-    console.log("cookie set");
+    res.cookie("token", token, cookieOptions);
+    console.log("Cookie 'token' set with options:", cookieOptions);
 
     try {
       const result = await getUserProfile(newUser._id);
